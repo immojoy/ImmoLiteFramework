@@ -10,6 +10,8 @@ using UnityEngine.ResourceManagement.AsyncOperations;
 
 namespace Immojoy.LiteFramework.Runtime
 {
+    [DisallowMultipleComponent]
+    [AddComponentMenu("Immojoy/Lite Framework/Manager/Immo Resource Manager")]
     public class ImmoResourceManager : MonoBehaviour
     {
         private static ImmoResourceManager m_Instance;

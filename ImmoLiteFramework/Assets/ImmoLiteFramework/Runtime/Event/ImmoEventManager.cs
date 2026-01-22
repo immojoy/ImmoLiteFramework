@@ -6,6 +6,8 @@ using UnityEngine;
 
 namespace Immojoy.LiteFramework.Runtime
 {
+    [DisallowMultipleComponent]
+    [AddComponentMenu("Immojoy/Lite Framework/Manager/Immo Event Manager")]
     public sealed class ImmoEventManager : MonoBehaviour
     {
         private readonly Dictionary<Type, List<IImmoEventHandler>> m_EventHandlers = new();

@@ -6,6 +6,8 @@ using UnityEngine;
 
 namespace Immojoy.LiteFramework.Runtime
 {
+    [DisallowMultipleComponent]
+    [AddComponentMenu("Immojoy/Lite Framework/Manager/Immo UI Manager")]
     public class ImmoUiManager : MonoBehaviour
     {
         private static ImmoUiManager m_Instance;
