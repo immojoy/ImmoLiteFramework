@@ -1,0 +1,13 @@
+{
+    "name": "com.immojoy.immo-lite-framework",
+    "version": "0.0.1",
+    "displayName": "Immo Lite Framework",
+    "description": "ImmoJoy lightweight Unity modular game framework.",
+    "author": {
+        "name": "ImmoJoy"
+    },
+
+    "dependencies": {
+        "com.unity.addressables": "1.21.21"
+    }
+}
