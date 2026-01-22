@@ -10,6 +10,10 @@ namespace Immojoy.LiteFramework.Runtime
     [AddComponentMenu("Immojoy/Lite Framework/Manager/Immo Event Manager")]
     public sealed class ImmoEventManager : MonoBehaviour
     {
+        private static ImmoEventManager m_Instance;
+        public static ImmoEventManager Instance => m_Instance;
+
+
         private readonly Dictionary<Type, List<IImmoEventHandler>> m_EventHandlers = new();
         private readonly Queue<ImmoEvent> m_EventQueue = new();
         private readonly object m_Lock = new();
@@ -85,6 +89,20 @@ namespace Immojoy.LiteFramework.Runtime
             }
 
             ProcessEvent(e);
+        }
+
+
+        private void Awake()
+        {
+            if (m_Instance != null && m_Instance != this)
+            {
+                Destroy(this);
+            }
+            else
+            {
+                m_Instance = this;
+                DontDestroyOnLoad(this);
+            }
         }
 
 
