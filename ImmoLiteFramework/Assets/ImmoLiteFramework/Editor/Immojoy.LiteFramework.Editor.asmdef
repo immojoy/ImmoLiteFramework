@@ -1,0 +1,20 @@
+{
+    "name": "Immojoy.LiteFramework.Editor",
+    "rootNamespace": "Immojoy.LiteFramework.Editor",
+    "references": [
+        "Immojoy.LiteFramework.Runtime",
+        "Unity.Addressables",
+        "Unity.ResourceManager"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
