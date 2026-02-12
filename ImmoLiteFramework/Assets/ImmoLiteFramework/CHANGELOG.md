@@ -1,5 +1,59 @@
 # Changelog
 
+## [0.1.0] - 2026-02-12
+
+### Added
+- **Scene Management Module**
+  - `ImmoSceneManager`: Complete scene loading and unloading system
+  - Asynchronous scene loading with progress tracking
+  - Scene loading events (success, failure, update, start, unload)
+  - Support for additive scene loading
+  - Integration with resource management system
+  - Editor menu: `GameObject/Immo Lite Framework/Manager/Scene Manager`
+
+- **Procedure Management Module**
+  - `ImmoProcedureManager`: Lifecycle-based procedure system
+  - `ImmoProcedureBase`: Base class for custom procedures
+  - Support for procedure initialization, entry, update, and exit callbacks
+  - Procedure state transition system
+  - Example procedures: Launch, MainMenu, GamePlay
+  - Editor menu: `GameObject/Immo Lite Framework/Manager/Procedure Manager`
+
+- **Finite State Machine Module**
+  - `ImmoFsmManager`: Manager for multiple finite state machines
+  - `ImmoFsm<T>`: Generic finite state machine implementation
+  - `ImmoFsmState<T>`: Base class for FSM states
+  - `IImmoFsm<T>`: FSM interface for state management
+  - Support for state lifecycle callbacks (OnInit, OnEnter, OnUpdate, OnLeave, OnDestroy)
+  - State transition system with type safety
+  - Editor menu: `GameObject/Immo Lite Framework/Manager/Fsm Manager`
+
+- **Modular Editor Scripts**
+  - Separated editor creation scripts for better maintainability
+  - `ImmoSceneCreator.cs`: Scene Manager editor utilities
+  - `ImmoProcedureCreator.cs`: Procedure Manager editor utilities
+  - `ImmoFsmCreator.cs`: FSM Manager editor utilities
+
+### Changed
+- **Complete Framework Creation** now includes all six managers:
+  - Event Manager
+  - Resource Manager
+  - UI Manager
+  - Scene Manager (new)
+  - Procedure Manager (new)
+  - Fsm Manager (new)
+
+- **Documentation**
+  - All module comments translated from Chinese to English
+  - Comprehensive XML documentation for all public APIs
+  - Improved code readability and maintainability
+
+### Improved
+- Better separation of concerns with modular editor scripts
+- Enhanced framework initialization with all core systems
+- Consistent coding standards across all modules
+
+
 ## [0.0.3] - 2026-01-22
 
 ### Added

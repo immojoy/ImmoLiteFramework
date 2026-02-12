@@ -35,6 +35,24 @@ namespace Immojoy.LiteFramework.Editor
             GameObject uiManager = CreateUIManagerWithLayers();
             uiManager.transform.SetParent(frameworkRoot.transform, false);
 
+            // Create Scene Manager child object
+            GameObject sceneManager = new GameObject("Scene Manager");
+            sceneManager.AddComponent<ImmoSceneManager>();
+            Undo.RegisterCreatedObjectUndo(sceneManager, "Create Scene Manager");
+            sceneManager.transform.SetParent(frameworkRoot.transform, false);
+
+            // Create Procedure Manager child object
+            GameObject procedureManager = new GameObject("Procedure Manager");
+            procedureManager.AddComponent<ImmoProcedureManager>();
+            Undo.RegisterCreatedObjectUndo(procedureManager, "Create Procedure Manager");
+            procedureManager.transform.SetParent(frameworkRoot.transform, false);
+
+            // Create Fsm Manager child object
+            GameObject fsmManager = new GameObject("Fsm Manager");
+            fsmManager.AddComponent<ImmoFsmManager>();
+            Undo.RegisterCreatedObjectUndo(fsmManager, "Create Fsm Manager");
+            fsmManager.transform.SetParent(frameworkRoot.transform, false);
+
             // Select the newly created framework root object
             Selection.activeObject = frameworkRoot;
         }
