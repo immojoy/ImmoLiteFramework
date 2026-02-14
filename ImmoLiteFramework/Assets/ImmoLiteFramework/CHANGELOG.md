@@ -1,5 +1,34 @@
 # Changelog
 
+## [0.2.0] - 2026-02-15
+
+### Added
+- **Resource Manager - Scene Loading Support**
+  - `LoadSceneAsync`: Asynchronous scene loading with Task-based API
+  - `LoadSceneAsyncWithCallback`: Scene loading with callback-based API
+  - Support for additive scene loading mode
+
+### Changed
+- **Resource Manager - Enhanced Callback System**
+  - Refactored from single `OnAssetLoadSuccess` delegate to `OnAssetLoadCallback` struct
+  - `OnAssetLoadCallback` now includes three callback types:
+    - `SuccessCallback`: Called when asset loads successfully
+    - `ProgressCallback`: Called during loading progress (reserved for future use)
+    - `FailureCallback`: Called when asset loading fails
+  - `LoadAssetAsyncWithCallback` method signature updated to use `OnAssetLoadCallback`
+  - Improved error handling with detailed failure messages
+
+- **Package Dependencies**
+  - Removed `com.unity.textmeshpro` dependency
+  - Updated Unity package registry from `packages.unity.cn` to `packages.unity.com`
+  - Updated multiple Unity packages to latest versions
+
+- **Project Configuration**
+  - Upgraded Unity Editor from 2022.3.14f1c1 to 6000.0.20f1
+
+### Removed
+- `OnAssetLoadSuccess.cs` file (replaced by callback struct in `OnAssetLoadCallback.cs`)
+
 ## [0.1.0] - 2026-02-12
 
 ### Added
