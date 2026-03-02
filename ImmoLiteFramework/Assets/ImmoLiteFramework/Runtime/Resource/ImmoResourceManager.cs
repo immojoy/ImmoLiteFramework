@@ -20,13 +20,13 @@ namespace Immojoy.LiteFramework.Runtime
 
         private readonly Dictionary<string, AsyncOperationHandle> m_LoadedHandles = new();
         private readonly Dictionary<string, int> m_ReferenceCounts = new();
-        private readonly Dictionary<string, List<OnAssetLoadSuccess>> m_OngoingCallbacks = new();
+        private readonly Dictionary<string, List<OnAssetLoadCallback>> m_OngoingCallbacks = new();
 
 
         /// <summary>
         /// Asynchronously loads an asset from the specified address with callbacks.
         /// </summary>
-        public void LoadAssetAsyncWithCallback<T>(string assetAddress, OnAssetLoadSuccess successCallback, object data) where T : UnityEngine.Object
+        public void LoadAssetAsyncWithCallback<T>(string assetAddress, OnAssetLoadCallback callback, object data) where T : UnityEngine.Object
         {
             if (string.IsNullOrEmpty(assetAddress))
             {
@@ -38,25 +38,25 @@ namespace Immojoy.LiteFramework.Runtime
                 if (existingHandle.Result is T result)
                 {
                     m_ReferenceCounts[assetAddress]++;
-                    successCallback?.Invoke(assetAddress, result, 0, data);
+                    callback.SuccessCallback?.Invoke(assetAddress, result, 0, data);
                     return;
                 }
             }
 
             // Check for ongoing loading of the same asset to avoid duplication
-            if (m_OngoingCallbacks.TryGetValue(assetAddress, out List<OnAssetLoadSuccess> callbacks))
+            if (m_OngoingCallbacks.TryGetValue(assetAddress, out List<OnAssetLoadCallback> callbacks))
             {
-                callbacks.Add(successCallback);
+                callbacks.Add(callback);
                 return;
             }
 
             // Start new load operation
-            m_OngoingCallbacks[assetAddress] = new List<OnAssetLoadSuccess> { successCallback };
+            m_OngoingCallbacks[assetAddress] = new List<OnAssetLoadCallback> { callback };
 
             AsyncOperationHandle<T> handle = Addressables.LoadAssetAsync<T>(assetAddress);
             handle.Completed += operation =>
             {
-                if (m_OngoingCallbacks.TryGetValue(assetAddress, out List<OnAssetLoadSuccess> callbacks))
+                if (m_OngoingCallbacks.TryGetValue(assetAddress, out List<OnAssetLoadCallback> callbacks))
                 {
                     if (operation.Status == AsyncOperationStatus.Succeeded)
                     {
@@ -65,14 +65,14 @@ namespace Immojoy.LiteFramework.Runtime
 
                         foreach (var callback in callbacks)
                         {
-                            callback?.Invoke(assetAddress, operation.Result, 0, data);
+                            callback.SuccessCallback?.Invoke(assetAddress, operation.Result, 0, data);
                         }
                     }
-                    else
+                    else if (operation.Status == AsyncOperationStatus.Failed)
                     {
                         foreach (var callback in callbacks)
                         {
-                            callback?.Invoke(assetAddress, null, 0, data);
+                            callback.FailureCallback?.Invoke(assetAddress, operation.OperationException?.Message, data);
                         }
                     }
                 }
@@ -115,6 +115,47 @@ namespace Immojoy.LiteFramework.Runtime
             {
                 Debug.LogError($"Failed to load asset at address: {assetAddress}");
                 return null;
+            }
+        }
+
+
+        public void LoadSceneAsyncWithCallback(string sceneAddress, OnAssetLoadCallback callback, object data)
+        {
+            if (string.IsNullOrEmpty(sceneAddress))
+            {
+                throw new ArgumentException("Scene address cannot be null or empty.", nameof(sceneAddress));
+            }
+
+            AsyncOperationHandle handle = Addressables.LoadSceneAsync(sceneAddress,
+                UnityEngine.SceneManagement.LoadSceneMode.Additive, false);
+            handle.Completed += operation =>
+            {
+                if (operation.Status == AsyncOperationStatus.Succeeded)
+                {
+                    callback.SuccessCallback?.Invoke(sceneAddress, operation.Result, 0, data);
+                }
+                else if (operation.Status == AsyncOperationStatus.Failed)
+                {
+                    callback.FailureCallback?.Invoke(sceneAddress, operation.OperationException?.Message, data);
+                }
+            };
+        }
+
+
+        public async Task LoadSceneAsync(string sceneAddress)
+        {
+            if (string.IsNullOrEmpty(sceneAddress))
+            {
+                throw new ArgumentException("Scene address cannot be null or empty.", nameof(sceneAddress));
+            }
+
+            AsyncOperationHandle handle = Addressables.LoadSceneAsync(sceneAddress,
+                UnityEngine.SceneManagement.LoadSceneMode.Additive, false);
+            await handle.Task;
+
+            if (handle.Status != AsyncOperationStatus.Succeeded)
+            {
+                Debug.LogError($"Failed to load scene at address: {sceneAddress}");
             }
         }
 

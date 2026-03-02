@@ -55,7 +55,16 @@ namespace Immojoy.LiteFramework.Runtime
             }
             else
             {
-                ImmoResourceManager.Instance.LoadAssetAsyncWithCallback<GameObject>(assetAddress, OnUiLoadSuccess, args);
+                OnAssetLoadCallback callback = new OnAssetLoadCallback
+                {
+                    SuccessCallback = OnUiLoadSuccess,
+                    ProgressCallback = null,  // Optional: Implement progress callback if needed
+                    FailureCallback = (address, errorMessage, data) =>
+                    {
+                        Debug.LogError($"Failed to load UI asset at {address}: {errorMessage}");
+                    }
+                };
+                ImmoResourceManager.Instance.LoadAssetAsyncWithCallback<GameObject>(assetAddress, callback, args);
             }
         }
 
