@@ -10,42 +10,7 @@ using UnityEngine.ResourceManagement.AsyncOperations;
 
 namespace Immojoy.LiteFramework.Runtime
 {
-    /// <summary>
-    /// Callback delegate for successful asset loading.
-    /// </summary>
-    /// <param name="assetName">The name of the asset to be loaded.</param>
-    /// <param name="asset">The loaded asset.</param>
-    /// <param name="duration">The duration of the loading process.</param>
-    /// <param name="userData">User-defined data.</param>
-    public delegate void OnAssetLoadSuccess(string assetName, object asset, float duration, object userData);
 
-
-    /// <summary>
-    /// Callback delegate for asset loading progress.
-    /// </summary>
-    /// <param name="assetName">The name of the asset being loaded.</param>
-    /// <param name="progress">The progress of the loading process (0 to 1).</param>
-    /// <param name="userData">User-defined data.</param>
-    public delegate void OnAssetLoadProgress(string assetName, float progress, object userData);
-
-
-    /// <summary>
-    /// Callback delegate for failed asset loading.
-    /// </summary>
-    /// <param name="assetName">The name of the asset that failed to load.</param>
-    /// <param name="errorMessage">The error message describing the failure.</param>
-    /// <param name="userData">User-defined data.</param>
-    public delegate void OnAssetLoadFailure(string assetName, string errorMessage, object userData);
-
-
-    public struct OnAssetLoadCallback
-    {
-        public OnAssetLoadSuccess SuccessCallback;
-        public OnAssetLoadProgress ProgressCallback;
-        public OnAssetLoadFailure FailureCallback;
-    }
-
-    
     [DisallowMultipleComponent]
     [AddComponentMenu("Immojoy/Lite Framework/Manager/Immo Resource Manager")]
     public class ImmoResourceManager : MonoBehaviour
@@ -57,6 +22,7 @@ namespace Immojoy.LiteFramework.Runtime
         private readonly Dictionary<string, AsyncOperationHandle> m_LoadedHandles = new();
         private readonly Dictionary<string, int> m_ReferenceCounts = new();
         private readonly Dictionary<string, List<OnAssetLoadCallback>> m_OngoingCallbacks = new();
+        private readonly Dictionary<string, AsyncOperationHandle> m_LoadedSceneHandles = new();
 
 
         /// <summary>
@@ -168,6 +134,7 @@ namespace Immojoy.LiteFramework.Runtime
             {
                 if (operation.Status == AsyncOperationStatus.Succeeded)
                 {
+                    m_LoadedSceneHandles[sceneAddress] = handle;
                     callback.SuccessCallback?.Invoke(sceneAddress, operation.Result, 0, data);
                 }
                 else if (operation.Status == AsyncOperationStatus.Failed)
@@ -189,10 +156,79 @@ namespace Immojoy.LiteFramework.Runtime
                 UnityEngine.SceneManagement.LoadSceneMode.Additive, false);
             await handle.Task;
 
-            if (handle.Status != AsyncOperationStatus.Succeeded)
+            if (handle.Status == AsyncOperationStatus.Succeeded)
+            {
+                m_LoadedSceneHandles[sceneAddress] = handle;
+            }
+            else
             {
                 Debug.LogError($"Failed to load scene at address: {sceneAddress}");
             }
+        }
+
+
+        /// <summary>
+        /// Releases the scene at the specified address.
+        /// </summary>
+        /// <param name="sceneAddress">Scene address</param>
+        public async Task ReleaseScene(string sceneAddress)
+        {
+            if (string.IsNullOrEmpty(sceneAddress))
+            {
+                throw new ArgumentException("Scene address cannot be null or empty.", nameof(sceneAddress));
+            }
+
+            if (!m_LoadedSceneHandles.TryGetValue(sceneAddress, out AsyncOperationHandle handle))
+            {
+                Debug.LogWarning($"Scene at address '{sceneAddress}' is not loaded or already released.");
+                return;
+            }
+
+            m_LoadedSceneHandles.Remove(sceneAddress);
+
+            AsyncOperationHandle unloadHandle = Addressables.UnloadSceneAsync(handle);
+            await unloadHandle.Task;
+
+            if (unloadHandle.Status != AsyncOperationStatus.Succeeded)
+            {
+                Debug.LogError($"Failed to release scene at address: {sceneAddress}");
+            }
+        }
+
+
+        /// <summary>
+        /// Releases the scene at the specified address with callbacks.
+        /// </summary>
+        /// <param name="sceneAddress">Scene address</param>
+        /// <param name="callback">Callbacks for success or failure</param>
+        /// <param name="data">User-defined data passed to callbacks</param>
+        public void ReleaseSceneWithCallback(string sceneAddress, OnSceneReleaseCallback callback, object data)
+        {
+            if (string.IsNullOrEmpty(sceneAddress))
+            {
+                throw new ArgumentException("Scene address cannot be null or empty.", nameof(sceneAddress));
+            }
+
+            if (!m_LoadedSceneHandles.TryGetValue(sceneAddress, out AsyncOperationHandle handle))
+            {
+                callback.FailureCallback?.Invoke(sceneAddress, $"Scene at address '{sceneAddress}' is not loaded or already released.", data);
+                return;
+            }
+
+            m_LoadedSceneHandles.Remove(sceneAddress);
+
+            AsyncOperationHandle unloadHandle = Addressables.UnloadSceneAsync(handle);
+            unloadHandle.Completed += operation =>
+            {
+                if (operation.Status == AsyncOperationStatus.Succeeded)
+                {
+                    callback.SuccessCallback?.Invoke(sceneAddress, 0, data);
+                }
+                else if (operation.Status == AsyncOperationStatus.Failed)
+                {
+                    callback.FailureCallback?.Invoke(sceneAddress, operation.OperationException?.Message, data);
+                }
+            };
         }
 
 
