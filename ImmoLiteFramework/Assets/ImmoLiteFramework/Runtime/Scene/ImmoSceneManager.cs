@@ -1,410 +1,286 @@
 using System;
+using System.Threading.Tasks;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.AddressableAssets;
+using UnityEngine.ResourceManagement.AsyncOperations;
+using UnityEngine.ResourceManagement.ResourceProviders;
 using UnityEngine.SceneManagement;
 
 
 namespace Immojoy.LiteFramework.Runtime
 {
     /// <summary>
-    /// Scene manager.
+    /// Scene manager. Handles scene transitions with optional transition effects and loading screens.
+    /// Owns all scene handle tracking (single source of truth).
     /// </summary>
     [DisallowMultipleComponent]
-    [AddComponentMenu("Immojoy/Lite Framework/Manager/Immo Scene Manager")]
     public sealed class ImmoSceneManager : MonoBehaviour
     {
-        private static ImmoSceneManager m_Instance;
-        public static ImmoSceneManager Instance => m_Instance;
+        private ImmoResourceManager m_ResourceManager;
 
+        private readonly Dictionary<string, AsyncOperationHandle<SceneInstance>> m_LoadedScenes = new();
 
-        private readonly List<string> m_LoadedSceneNames = new List<string>();
-        private readonly List<string> m_LoadingSceneNames = new List<string>();
-        private readonly List<string> m_UnloadingSceneNames = new List<string>();
-        private readonly Dictionary<string, AsyncOperation> m_LoadingOperations = new Dictionary<string, AsyncOperation>();
+        private bool m_IsTransitioning = false;
 
 
         /// <summary>
-        /// Scene load success event.
+        /// Performs a scene transition according to the given configuration.
         /// </summary>
-        public event Action<string, float> LoadSceneSuccess;
-
-
-        /// <summary>
-        /// Scene load failure event.
-        /// </summary>
-        public event Action<string, string> LoadSceneFailure;
-
-
-        /// <summary>
-        /// Scene load update event.
-        /// </summary>
-        public event Action<string, float> LoadSceneUpdate;
-
-
-        /// <summary>
-        /// Scene unload success event.
-        /// </summary>
-        public event Action<string> UnloadSceneSuccess;
-
-
-        /// <summary>
-        /// Scene unload failure event.
-        /// </summary>
-        public event Action<string, string> UnloadSceneFailure;
-
-
-        private void Awake()
+        public async Task LoadSceneAsync(ImmoSceneTransitionConfig config)
         {
-            if (m_Instance != null && m_Instance != this)
+            if (m_IsTransitioning)
             {
-                Destroy(this);
+                Debug.LogWarning("Scene transition is already in progress.");
                 return;
             }
-
-            m_Instance = this;
-        }
-
-
-        private void Update()
-        {
-            // Update loading progress
-            List<string> completedScenes = new List<string>();
-            foreach (var kvp in m_LoadingOperations)
-            {
-                string sceneName = kvp.Key;
-                AsyncOperation operation = kvp.Value;
-
-                // Trigger update event
-                LoadSceneUpdate?.Invoke(sceneName, operation.progress);
-
-                // Check if completed
-                if (operation.isDone)
-                {
-                    completedScenes.Add(sceneName);
-                }
-            }
-
-            // Clean up completed loading operations
-            foreach (string sceneName in completedScenes)
-            {
-                m_LoadingOperations.Remove(sceneName);
-            }
-        }
-
-
-        /// <summary>
-        /// Gets whether a scene is loaded.
-        /// </summary>
-        /// <param name="sceneName">Scene name.</param>
-        /// <returns>Whether the scene is loaded.</returns>
-        public bool IsSceneLoaded(string sceneName)
-        {
-            if (string.IsNullOrEmpty(sceneName))
-            {
-                Debug.LogError("Scene name is invalid.");
-                return false;
-            }
-
-            return m_LoadedSceneNames.Contains(sceneName);
-        }
-
-
-        /// <summary>
-        /// Gets whether a scene is loading.
-        /// </summary>
-        /// <param name="sceneName">Scene name.</param>
-        /// <returns>Whether the scene is loading.</returns>
-        public bool IsSceneLoading(string sceneName)
-        {
-            if (string.IsNullOrEmpty(sceneName))
-            {
-                Debug.LogError("Scene name is invalid.");
-                return false;
-            }
-
-            return m_LoadingSceneNames.Contains(sceneName);
-        }
-
-
-        /// <summary>
-        /// Gets whether a scene is unloading.
-        /// </summary>
-        /// <param name="sceneName">Scene name.</param>
-        /// <returns>Whether the scene is unloading.</returns>
-        public bool IsSceneUnloading(string sceneName)
-        {
-            if (string.IsNullOrEmpty(sceneName))
-            {
-                Debug.LogError("Scene name is invalid.");
-                return false;
-            }
-
-            return m_UnloadingSceneNames.Contains(sceneName);
-        }
-
-
-        /// <summary>
-        /// Gets the list of loaded scene names.
-        /// </summary>
-        /// <returns>List of loaded scene names.</returns>
-        public string[] GetLoadedSceneNames()
-        {
-            return m_LoadedSceneNames.ToArray();
-        }
-
-
-        /// <summary>
-        /// Gets the list of loading scene names.
-        /// </summary>
-        /// <returns>List of loading scene names.</returns>
-        public string[] GetLoadingSceneNames()
-        {
-            return m_LoadingSceneNames.ToArray();
-        }
-
-
-        /// <summary>
-        /// Gets the list of unloading scene names.
-        /// </summary>
-        /// <returns>List of unloading scene names.</returns>
-        public string[] GetUnloadingSceneNames()
-        {
-            return m_UnloadingSceneNames.ToArray();
-        }
-
-
-        /// <summary>
-        /// Load scene (asynchronous).
-        /// </summary>
-        /// <param name="sceneName">Scene name.</param>
-        /// <param name="loadMode">Load mode.</param>
-        public void LoadScene(string sceneName, LoadSceneMode loadMode = LoadSceneMode.Single)
-        {
-            LoadSceneAsync(sceneName, loadMode);
-        }
-
-
-        /// <summary>
-        /// Load scene asynchronously.
-        /// </summary>
-        /// <param name="sceneName">Scene name.</param>
-        /// <param name="loadMode">Load mode (Single or Additive).</param>
-        public void LoadSceneAsync(string sceneName, LoadSceneMode loadMode = LoadSceneMode.Single)
-        {
-            if (string.IsNullOrEmpty(sceneName))
-            {
-                string errorMessage = "Scene name is invalid.";
-                Debug.LogError(errorMessage);
-                LoadSceneFailure?.Invoke(sceneName, errorMessage);
-                return;
-            }
-
-            if (IsSceneLoading(sceneName))
-            {
-                string errorMessage = $"Scene '{sceneName}' is already being loaded.";
-                Debug.LogWarning(errorMessage);
-                return;
-            }
-
-            if (IsSceneLoaded(sceneName))
-            {
-                string errorMessage = $"Scene '{sceneName}' is already loaded.";
-                Debug.LogWarning(errorMessage);
-                return;
-            }
-
-            if (IsSceneUnloading(sceneName))
-            {
-                string errorMessage = $"Scene '{sceneName}' is being unloaded.";
-                Debug.LogError(errorMessage);
-                LoadSceneFailure?.Invoke(sceneName, errorMessage);
-                return;
-            }
-
-            m_LoadingSceneNames.Add(sceneName);
+            m_IsTransitioning = true;
 
             try
             {
-                AsyncOperation operation = SceneManager.LoadSceneAsync(sceneName, loadMode);
-                if (operation == null)
-                {
-                    string errorMessage = $"Failed to start loading scene '{sceneName}'.";
-                    Debug.LogError(errorMessage);
-                    m_LoadingSceneNames.Remove(sceneName);
-                    LoadSceneFailure?.Invoke(sceneName, errorMessage);
-                    return;
-                }
-
-                m_LoadingOperations[sceneName] = operation;
-
-                float startTime = Time.realtimeSinceStartup;
-
-                operation.completed += (AsyncOperation op) =>
-                {
-                    m_LoadingSceneNames.Remove(sceneName);
-
-                    if (op.isDone)
-                    {
-                        m_LoadedSceneNames.Add(sceneName);
-                        float duration = Time.realtimeSinceStartup - startTime;
-                        Debug.Log($"Scene '{sceneName}' loaded successfully in {duration:F2} seconds.");
-                        LoadSceneSuccess?.Invoke(sceneName, duration);
-                    }
-                    else
-                    {
-                        string errorMessage = $"Scene '{sceneName}' failed to load.";
-                        Debug.LogError(errorMessage);
-                        LoadSceneFailure?.Invoke(sceneName, errorMessage);
-                    }
-                };
+                await ExecuteTransitionAsync(config);
             }
             catch (Exception ex)
             {
-                m_LoadingSceneNames.Remove(sceneName);
-                string errorMessage = $"Exception occurred while loading scene '{sceneName}': {ex.Message}";
-                Debug.LogError(errorMessage);
-                LoadSceneFailure?.Invoke(sceneName, errorMessage);
+                Debug.LogError($"Scene transition failed: {ex}");
+            }
+            finally
+            {
+                m_IsTransitioning = false;
             }
         }
 
 
-        /// <summary>
-        /// Unload scene (asynchronous).
-        /// </summary>
-        /// <param name="sceneName">Scene name.</param>
-        public void UnloadScene(string sceneName)
+        private async Task ExecuteTransitionAsync(ImmoSceneTransitionConfig config)
         {
-            UnloadSceneAsync(sceneName);
-        }
+            IImmoTransitionHandler transition = config.TransitionHandler;
+            IImmoLoadingHandler loading = config.UseLoadingScreen ? config.LoadingHandler : null;
 
-
-        /// <summary>
-        /// Unload scene asynchronously.
-        /// </summary>
-        /// <param name="sceneName">Scene name.</param>
-        public void UnloadSceneAsync(string sceneName)
-        {
-            if (string.IsNullOrEmpty(sceneName))
+            // # Step 1: Fade in transition cover
+            if (transition != null)
             {
-                string errorMessage = "Scene name is invalid.";
-                Debug.LogError(errorMessage);
-                UnloadSceneFailure?.Invoke(sceneName, errorMessage);
-                return;
+                await transition.FadeInAsync();
             }
-
-            if (IsSceneUnloading(sceneName))
-            {
-                string errorMessage = $"Scene '{sceneName}' is already being unloaded.";
-                Debug.LogWarning(errorMessage);
-                return;
-            }
-
-            if (IsSceneLoading(sceneName))
-            {
-                string errorMessage = $"Scene '{sceneName}' is being loaded.";
-                Debug.LogError(errorMessage);
-                UnloadSceneFailure?.Invoke(sceneName, errorMessage);
-                return;
-            }
-
-            if (!IsSceneLoaded(sceneName))
-            {
-                string errorMessage = $"Scene '{sceneName}' is not loaded yet.";
-                Debug.LogError(errorMessage);
-                UnloadSceneFailure?.Invoke(sceneName, errorMessage);
-                return;
-            }
-
-            m_UnloadingSceneNames.Add(sceneName);
 
             try
             {
-                AsyncOperation operation = SceneManager.UnloadSceneAsync(sceneName);
-                if (operation == null)
+                // # Step 2: Show loading screen
+                if (loading != null)
                 {
-                    string errorMessage = $"Failed to start unloading scene '{sceneName}'.";
-                    Debug.LogError(errorMessage);
-                    m_UnloadingSceneNames.Remove(sceneName);
-                    UnloadSceneFailure?.Invoke(sceneName, errorMessage);
-                    return;
+                    await loading.ShowLoadingScreenAsync();
                 }
 
-                operation.completed += (AsyncOperation op) =>
+                // Start minimum display time timer in parallel with loading
+                Task minDisplayTask = (loading == null && config.MinTransitionTime > 0f)
+                    ? Task.Delay(TimeSpan.FromSeconds(config.MinTransitionTime))
+                    : Task.CompletedTask;
+
+                // # Step 3: Load new scenes and preload assets
+                await LoadScenesInternalAsync(config.ScenesToLoad, config.AssetsToPreload, loading);
+
+                // # Step 4: Activate all newly loaded scenes
+                await ActivateScenesAsync(config.ScenesToLoad);
+
+                // # Step 5: Set the first loaded scene as active
+                if (config.ScenesToLoad.Count > 0)
                 {
-                    m_UnloadingSceneNames.Remove(sceneName);
+                    string firstScene = config.ScenesToLoad[0];
+                    if (m_LoadedScenes.TryGetValue(firstScene, out var handle))
+                    {
+                        SceneManager.SetActiveScene(handle.Result.Scene);
+                    }
+                }
 
-                    if (op.isDone)
-                    {
-                        m_LoadedSceneNames.Remove(sceneName);
-                        Debug.Log($"Scene '{sceneName}' unloaded successfully.");
-                        UnloadSceneSuccess?.Invoke(sceneName);
-                    }
-                    else
-                    {
-                        string errorMessage = $"Scene '{sceneName}' failed to unload.";
-                        Debug.LogError(errorMessage);
-                        UnloadSceneFailure?.Invoke(sceneName, errorMessage);
-                    }
-                };
+                // # Step 6: Unload old scenes (after new ones are ready)
+                await UnloadScenesInternalAsync(config.ScenesToUnload);
+
+                // # Step 7: Wait for minimum display time
+                await minDisplayTask;
+
+                // # Step 8: Hide loading screen
+                if (loading != null)
+                {
+                    await loading.HideLoadingScreenAsync();
+                }
             }
-            catch (Exception ex)
+            finally
             {
-                m_UnloadingSceneNames.Remove(sceneName);
-                string errorMessage = $"Exception occurred while unloading scene '{sceneName}': {ex.Message}";
-                Debug.LogError(errorMessage);
-                UnloadSceneFailure?.Invoke(sceneName, errorMessage);
+                // Always fade out to prevent a stuck transition cover
+                if (transition != null)
+                {
+                    try
+                    {
+                        await transition.FadeOutAsync();
+                    }
+                    catch (Exception ex)
+                    {
+                        Debug.LogError($"Failed to fade out transition: {ex}");
+                    }
+                }
+            }
+        }
+
+
+        private async Task LoadScenesInternalAsync(
+            List<string> scenesToLoad, List<string> assetsToPreload, IImmoLoadingHandler loadingHandler)
+        {
+            int total = scenesToLoad.Count + assetsToPreload.Count;
+            if (total == 0)
+            {
+                return;
+            }
+
+            int completed = 0;
+
+            // Preload additional assets
+            foreach (string asset in assetsToPreload)
+            {
+                await m_ResourceManager.LoadAssetAsync<UnityEngine.Object>(asset);
+                completed++;
+                loadingHandler?.UpdateLoadingProgress((float)completed / total);
+            }
+
+            // Load scenes with fine-grained progress
+            foreach (string scene in scenesToLoad)
+            {
+                if (m_LoadedScenes.ContainsKey(scene))
+                {
+                    completed++;
+                    loadingHandler?.UpdateLoadingProgress((float)completed / total);
+                    continue;
+                }
+
+                AsyncOperationHandle<SceneInstance> handle = m_ResourceManager.LoadSceneHandle(scene);
+
+                // Poll progress until complete
+                while (!handle.IsDone)
+                {
+                    float overallProgress = (completed + handle.PercentComplete) / total;
+                    loadingHandler?.UpdateLoadingProgress(overallProgress);
+                    await Task.Yield();
+                }
+
+                if (handle.Status == AsyncOperationStatus.Succeeded)
+                {
+                    m_LoadedScenes[scene] = handle;
+                }
+                else
+                {
+                    Debug.LogError($"Failed to load scene '{scene}': {handle.OperationException}");
+                }
+
+                completed++;
+                loadingHandler?.UpdateLoadingProgress((float)completed / total);
+            }
+        }
+
+
+        private async Task ActivateScenesAsync(List<string> scenesToActivate)
+        {
+            foreach (string scene in scenesToActivate)
+            {
+                if (m_LoadedScenes.TryGetValue(scene, out var handle))
+                {
+                    AsyncOperation activateOp = handle.Result.ActivateAsync();
+                    while (!activateOp.isDone)
+                    {
+                        await Task.Yield();
+                    }
+                }
+            }
+        }
+
+
+        private async Task UnloadScenesInternalAsync(List<string> scenesToUnload)
+        {
+            foreach (string scene in scenesToUnload)
+            {
+                if (m_LoadedScenes.TryGetValue(scene, out var handle))
+                {
+                    AsyncOperationHandle<SceneInstance> unloadHandle = m_ResourceManager.UnloadSceneHandle(handle);
+                    await unloadHandle.Task;
+
+                    if (unloadHandle.Status != AsyncOperationStatus.Succeeded)
+                    {
+                        Debug.LogError($"Failed to unload scene '{scene}': {unloadHandle.OperationException}");
+                    }
+
+                    m_LoadedScenes.Remove(scene);
+                }
             }
         }
 
 
         /// <summary>
-        /// Gets the current active scene.
+        /// Loads a single scene additively and tracks its handle.
+        /// Does not involve any transition or loading screen.
         /// </summary>
-        /// <returns>Current active scene.</returns>
-        public UnityEngine.SceneManagement.Scene GetActiveScene()
+        public async Task LoadSceneAsync(string sceneAddress)
         {
-            return SceneManager.GetActiveScene();
+            if (m_LoadedScenes.ContainsKey(sceneAddress))
+            {
+                Debug.LogWarning($"Scene '{sceneAddress}' is already loaded.");
+                return;
+            }
+
+            AsyncOperationHandle<SceneInstance> handle = m_ResourceManager.LoadSceneHandle(sceneAddress);
+            await handle.Task;
+
+            if (handle.Status == AsyncOperationStatus.Succeeded)
+            {
+                m_LoadedScenes[sceneAddress] = handle;
+                AsyncOperation activateOp = handle.Result.ActivateAsync();
+                while (!activateOp.isDone)
+                {
+                    await Task.Yield();
+                }
+            }
+            else
+            {
+                Debug.LogError($"Failed to load scene '{sceneAddress}': {handle.OperationException}");
+            }
         }
 
 
         /// <summary>
-        /// Sets the active scene.
+        /// Unloads a previously loaded scene.
         /// </summary>
-        /// <param name="sceneName">Scene name.</param>
-        /// <returns>Whether setting was successful.</returns>
-        public bool SetActiveScene(string sceneName)
+        public async Task UnloadSceneAsync(string sceneAddress)
         {
-            if (string.IsNullOrEmpty(sceneName))
+            if (!m_LoadedScenes.TryGetValue(sceneAddress, out var handle))
             {
-                Debug.LogError("Scene name is invalid.");
-                return false;
+                Debug.LogWarning($"Scene '{sceneAddress}' is not loaded.");
+                return;
             }
 
-            if (!IsSceneLoaded(sceneName))
+            AsyncOperationHandle<SceneInstance> unloadHandle = m_ResourceManager.UnloadSceneHandle(handle);
+            await unloadHandle.Task;
+
+            if (unloadHandle.Status != AsyncOperationStatus.Succeeded)
             {
-                Debug.LogError($"Scene '{sceneName}' is not loaded.");
-                return false;
+                Debug.LogError($"Failed to unload scene '{sceneAddress}': {unloadHandle.OperationException}");
             }
 
-            UnityEngine.SceneManagement.Scene scene = SceneManager.GetSceneByName(sceneName);
-            if (!scene.IsValid())
-            {
-                Debug.LogError($"Scene '{sceneName}' is not valid.");
-                return false;
-            }
-
-            return SceneManager.SetActiveScene(scene);
+            m_LoadedScenes.Remove(sceneAddress);
         }
 
 
-        private void OnDestroy()
+        public void Initialize(ImmoResourceManager resourceManager)
         {
-            // Clean up event subscriptions
-            LoadSceneSuccess = null;
-            LoadSceneFailure = null;
-            LoadSceneUpdate = null;
-            UnloadSceneSuccess = null;
-            UnloadSceneFailure = null;
+            m_ResourceManager = resourceManager;
+        }
+
+
+        public void Dispose()
+        {
+            foreach (var kvp in m_LoadedScenes)
+            {
+                if (kvp.Value.IsValid())
+                {
+                    Addressables.UnloadSceneAsync(kvp.Value);
+                }
+            }
+            m_LoadedScenes.Clear();
         }
     }
 }

@@ -4,9 +4,9 @@ using UnityEngine;
 namespace Immojoy.LiteFramework.Runtime
 {
     /// <summary>
-    /// Central framework manager that manages all sub-managers' lifecycle.
+    /// Central framework manager that controls all sub-managers' lifecycle.
     /// Place this component on the root "Immo Lite Framework" GameObject.
-    /// All sub-managers should be on child GameObjects.
+    /// Sub-managers are created and initialized automatically by this class.
     /// </summary>
     [DisallowMultipleComponent]
     [AddComponentMenu("Immojoy/Lite Framework/Immo Framework")]
@@ -14,7 +14,6 @@ namespace Immojoy.LiteFramework.Runtime
     {
         private static ImmoFramework m_Instance;
         public static ImmoFramework Instance => m_Instance;
-
 
         public ImmoEventManager EventManager { get; private set; }
         public ImmoResourceManager ResourceManager { get; private set; }
@@ -35,27 +34,61 @@ namespace Immojoy.LiteFramework.Runtime
             m_Instance = this;
             DontDestroyOnLoad(gameObject);
 
-            DiscoverManagers();
+            CreateManagers();
+            InitializeManagers();
         }
 
 
-        private void DiscoverManagers()
+        private void CreateManagers()
         {
-            EventManager = GetComponentInChildren<ImmoEventManager>();
-            ResourceManager = GetComponentInChildren<ImmoResourceManager>();
-            FsmManager = GetComponentInChildren<ImmoFsmManager>();
-            SceneManager = GetComponentInChildren<ImmoSceneManager>();
-            UiManager = GetComponentInChildren<ImmoUiManager>();
-            ProcedureManager = GetComponentInChildren<ImmoProcedureManager>();
+            EventManager = CreateManagerGameObject<ImmoEventManager>("Event Manager");
+            ResourceManager = CreateManagerGameObject<ImmoResourceManager>("Resource Manager");
+            FsmManager = CreateManagerGameObject<ImmoFsmManager>("Fsm Manager");
+            SceneManager = CreateManagerGameObject<ImmoSceneManager>("Scene Manager");
+            UiManager = CreateManagerGameObject<ImmoUiManager>("UI Manager");
+            ProcedureManager = CreateManagerGameObject<ImmoProcedureManager>("Procedure Manager");
+        }
+
+
+        private T CreateManagerGameObject<T>(string goName) where T : MonoBehaviour
+        {
+            GameObject go = new GameObject(goName);
+            go.transform.SetParent(transform, false);
+            return go.AddComponent<T>();
+        }
+
+
+        private void InitializeManagers()
+        {
+            // Initialize in dependency order: no-dependency managers first
+            EventManager.Initialize();
+            ResourceManager.Initialize();
+            FsmManager.Initialize();
+
+            SceneManager.Initialize(ResourceManager);
+
+            UiManager.Initialize(ResourceManager);
+            
+            ProcedureManager.Initialize(FsmManager);
         }
 
 
         private void OnDestroy()
         {
-            if (m_Instance == this)
+            if (m_Instance != this)
             {
-                m_Instance = null;
+                return;
             }
+
+            // Dispose in reverse initialization order
+            ProcedureManager?.Dispose();
+            UiManager?.Dispose();
+            SceneManager?.Dispose();
+            FsmManager?.Dispose();
+            ResourceManager?.Dispose();
+            EventManager?.Dispose();
+
+            m_Instance = null;
         }
     }
 }

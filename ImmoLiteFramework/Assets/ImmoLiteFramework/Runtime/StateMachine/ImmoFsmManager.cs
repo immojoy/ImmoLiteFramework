@@ -10,13 +10,8 @@ namespace Immojoy.LiteFramework.Runtime
     /// Finite state machine manager.
     /// </summary>
     [DisallowMultipleComponent]
-    [AddComponentMenu("Immojoy/Lite Framework/Manager/Immo Fsm Manager")]
     public sealed class ImmoFsmManager : MonoBehaviour
     {
-        private static ImmoFsmManager m_Instance;
-        public static ImmoFsmManager Instance => m_Instance;
-
-
         private readonly Dictionary<string, object> m_Fsms = new();
         private readonly List<object> m_TempFsms = new();
 
@@ -26,17 +21,10 @@ namespace Immojoy.LiteFramework.Runtime
         /// </summary>
         public int Count => m_Fsms.Count;
 
-
-        private void Awake()
-        {
-            if (m_Instance != null && m_Instance != this)
-            {
-                Destroy(this);
-                return;
-            }
-
-            m_Instance = this;
-        }
+        /// <summary>
+        /// Initializes the FSM manager.
+        /// </summary>
+        public void Initialize() { }
 
 
         private void Update()
@@ -72,7 +60,10 @@ namespace Immojoy.LiteFramework.Runtime
         }
 
 
-        private void OnDestroy()
+        /// <summary>
+        /// Disposes the FSM manager, shutting down and destroying all finite state machines.
+        /// </summary>
+        public void Dispose()
         {
             m_TempFsms.Clear();
             foreach (KeyValuePair<string, object> fsm in m_Fsms)

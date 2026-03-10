@@ -92,17 +92,10 @@ namespace Immojoy.LiteFramework.Runtime
         }
 
 
-        private void Awake()
-        {
-            if (m_Instance != null && m_Instance != this)
-            {
-                Destroy(this);
-                return;
-            }
-
-            m_Instance = this;
-        }
-
+        /// <summary>
+        /// Initializes the event manager.
+        /// </summary>
+        public void Initialize() { }
 
         /// <summary>
         /// Updates the event module, processing all queued events.
@@ -131,9 +124,9 @@ namespace Immojoy.LiteFramework.Runtime
         
 
         /// <summary>
-        /// Shuts down the event module, clearing all queued events and handlers.
+        /// Disposes the event manager, clearing all queued events and handlers.
         /// </summary>
-        private void Destroy()
+        public void Dispose()
         {
             lock (m_Lock)
             {

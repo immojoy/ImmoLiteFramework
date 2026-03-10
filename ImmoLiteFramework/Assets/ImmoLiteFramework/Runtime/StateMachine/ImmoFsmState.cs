@@ -17,7 +17,7 @@ namespace Immojoy.LiteFramework.Runtime
         /// Called when finite state machine state is initialized.
         /// </summary>
         /// <param name="fsm">Finite state machine reference.</param>
-        protected internal virtual void OnInit(IImmoFsm<T> fsm) { }
+        protected internal virtual void OnInitialize(IImmoFsm<T> fsm) { }
 
 
         /// <summary>
@@ -48,7 +48,7 @@ namespace Immojoy.LiteFramework.Runtime
         /// Called when finite state machine state is destroyed.
         /// </summary>
         /// <param name="fsm">Finite state machine reference.</param>
-        protected internal virtual void OnDestroy(IImmoFsm<T> fsm) { }
+        protected internal virtual void OnDispose(IImmoFsm<T> fsm) { }
 
 
         /// <summary>

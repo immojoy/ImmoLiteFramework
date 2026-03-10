@@ -10,13 +10,9 @@ namespace Immojoy.LiteFramework.Runtime
     /// Procedure is a finite state machine that spans the entire lifecycle of the game runtime.
     /// </summary>
     [DisallowMultipleComponent]
-    [AddComponentMenu("Immojoy/Lite Framework/Manager/Immo Procedure Manager")]
     public sealed class ImmoProcedureManager : MonoBehaviour
     {
-        private static ImmoProcedureManager m_Instance;
-        public static ImmoProcedureManager Instance => m_Instance;
-
-
+        private ImmoFsmManager m_FsmManager;
         private IImmoFsm<ImmoProcedureManager> m_ProcedureFsm;
 
 
@@ -56,35 +52,34 @@ namespace Immojoy.LiteFramework.Runtime
         }
 
 
-        private void Awake()
+        /// <summary>
+        /// Initializes the procedure manager with its required FSM manager dependency.
+        /// </summary>
+        /// <param name="fsmManager">The FSM manager used to create procedure state machines.</param>
+        public void Initialize(ImmoFsmManager fsmManager)
         {
-            if (m_Instance != null && m_Instance != this)
-            {
-                Destroy(this);
-                return;
-            }
-
-            m_Instance = this;
+            m_FsmManager = fsmManager;
         }
 
-
-        private void OnDestroy()
+        /// <summary>
+        /// Disposes the procedure manager, destroying its state machine.
+        /// </summary>
+        public void Dispose()
         {
-            if (m_ProcedureFsm != null && ImmoFsmManager.Instance != null)
+            if (m_ProcedureFsm != null && m_FsmManager != null)
             {
-                ImmoFsmManager.Instance.DestroyFsm(m_ProcedureFsm);
+                m_FsmManager.DestroyFsm(m_ProcedureFsm);
                 m_ProcedureFsm = null;
             }
         }
 
-
         /// <summary>
-        /// Initialize procedure manager.
+        /// Sets up the procedure manager with the provided procedures.
         /// </summary>
         /// <param name="procedures">Procedures contained in the procedure manager.</param>
-        public void Initialize(params ImmoProcedureBase[] procedures)
+        public void SetupProcedures(params ImmoProcedureBase[] procedures)
         {
-            if (ImmoFsmManager.Instance == null)
+            if (m_FsmManager == null)
             {
                 Debug.LogError("FSM manager is invalid.");
                 return;
@@ -96,7 +91,7 @@ namespace Immojoy.LiteFramework.Runtime
                 return;
             }
 
-            m_ProcedureFsm = ImmoFsmManager.Instance.CreateFsm(this, procedures);
+            m_ProcedureFsm = m_FsmManager.CreateFsm(this, procedures);
 
             if (m_ProcedureFsm == null)
             {

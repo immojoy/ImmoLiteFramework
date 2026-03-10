@@ -7,16 +7,13 @@ using UnityEngine;
 namespace Immojoy.LiteFramework.Runtime
 {
     [DisallowMultipleComponent]
-    [AddComponentMenu("Immojoy/Lite Framework/Manager/Immo UI Manager")]
-    public class ImmoUiManager : MonoBehaviour
+    public sealed class ImmoUiManager : MonoBehaviour
     {
         [Header("Configuration")]
         [Tooltip("Optional: Custom UI layer configuration. If not set, default values will be used.")]
         [SerializeField] private ImmoUiLayerConfig m_LayerConfig;
-        
-        private static ImmoUiManager m_Instance;
-        public static ImmoUiManager Instance => m_Instance;
 
+        private ImmoResourceManager m_ResourceManager;
         private Dictionary<string, ImmoUiView> m_CachedViews = new();
         private Dictionary<UiLayer, Transform> m_LayerRoots = new();
         
@@ -55,7 +52,7 @@ namespace Immojoy.LiteFramework.Runtime
             }
             else
             {
-                OnAssetLoadCallback callback = new OnAssetLoadCallback
+                OnObjectLoadCallback callback = new OnObjectLoadCallback
                 {
                     SuccessCallback = OnUiLoadSuccess,
                     ProgressCallback = null,  // Optional: Implement progress callback if needed
@@ -64,7 +61,7 @@ namespace Immojoy.LiteFramework.Runtime
                         Debug.LogError($"Failed to load UI asset at {address}: {errorMessage}");
                     }
                 };
-                ImmoResourceManager.Instance.LoadAssetAsyncWithCallback<GameObject>(assetAddress, callback, args);
+                m_ResourceManager.LoadAssetAsyncWithCallback<GameObject>(assetAddress, callback, args);
             }
         }
 
@@ -78,14 +75,14 @@ namespace Immojoy.LiteFramework.Runtime
         }
 
 
-        public void DestroyUi(string viewName)
+        public void DisposeUi(string viewName)
         {
             if (m_CachedViews.TryGetValue(viewName, out ImmoUiView view))
             {
                 view.OnDispose();
                 m_CachedViews.Remove(viewName);
 
-                ImmoResourceManager.Instance.ReleaseAsset(viewName);
+                m_ResourceManager.UnloadAsset(viewName);
             }
         }
 
@@ -171,30 +168,30 @@ namespace Immojoy.LiteFramework.Runtime
         }
 
 
-        private void Awake()
+        /// <summary>
+        /// Initializes the UI manager with the required resource manager dependency.
+        /// </summary>
+        /// <param name="resourceManager">The resource manager used for loading UI assets.</param>
+        public void Initialize(ImmoResourceManager resourceManager)
         {
-            if (m_Instance != null && m_Instance != this)
-            {
-                Destroy(this);
-                return;
-            }
-
-            m_Instance = this;
+            m_ResourceManager = resourceManager;
             InitializeLayers();
         }
 
-
-        // Start is called before the first frame update
-        private void Start()
+        /// <summary>
+        /// Disposes the UI manager, destroying all cached views.
+        /// </summary>
+        public void Dispose()
         {
-
-        }
-
-
-        // Update is called once per frame
-        private void Update()
-        {
-
+            foreach (var kvp in m_CachedViews)
+            {
+                // In Editor, UI objects may already be destroyed when exiting Play Mode.
+                if (kvp.Value != null)
+                {
+                    kvp.Value.OnDispose();
+                }
+            }
+            m_CachedViews.Clear();
         }
     }
 }

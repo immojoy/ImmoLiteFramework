@@ -13,10 +13,10 @@ namespace Immojoy.LiteFramework.Runtime
     {
         private void Start()
         {
-            // Ensure procedure manager exists
-            if (ImmoProcedureManager.Instance == null)
+            // Ensure framework and procedure manager exist
+            if (ImmoFramework.Instance == null || ImmoFramework.Instance.ProcedureManager == null)
             {
-                Debug.LogError("ImmoProcedureManager is not found in the scene.");
+                Debug.LogError("ImmoProcedureManager is not found. Ensure ImmoFramework is present in the scene.");
                 return;
             }
 
@@ -25,22 +25,22 @@ namespace Immojoy.LiteFramework.Runtime
             ImmoMainMenuProcedure mainMenuProcedure = new ImmoMainMenuProcedure();
             ImmoGamePlayProcedure gamePlayProcedure = new ImmoGamePlayProcedure();
 
-            // Initialize procedure manager
-            ImmoProcedureManager.Instance.Initialize(launchProcedure, mainMenuProcedure, gamePlayProcedure);
+            // Setup procedures
+            ImmoFramework.Instance.ProcedureManager.SetupProcedures(launchProcedure, mainMenuProcedure, gamePlayProcedure);
 
             // Set initial data
-            ImmoProcedureManager.Instance.GetProcedure<ImmoLaunchProcedure>()?.SetData("GameVersion", "1.0.0");
+            ImmoFramework.Instance.ProcedureManager.GetProcedure<ImmoLaunchProcedure>()?.SetData("GameVersion", "1.0.0");
 
             // Start procedure
-            ImmoProcedureManager.Instance.StartProcedure<ImmoLaunchProcedure>();
+            ImmoFramework.Instance.ProcedureManager.StartProcedure<ImmoLaunchProcedure>();
         }
 
 
         private void OnGUI()
         {
             GUILayout.BeginArea(new Rect(10, 10, 300, 200));
-            GUILayout.Label($"Current Procedure: {ImmoProcedureManager.Instance.CurrentProcedure?.GetType().Name ?? "None"}");
-            GUILayout.Label($"Procedure Time: {ImmoProcedureManager.Instance.CurrentProcedureTime:F2}s");
+            GUILayout.Label($"Current Procedure: {ImmoFramework.Instance?.ProcedureManager?.CurrentProcedure?.GetType().Name ?? "None"}");
+            GUILayout.Label($"Procedure Time: {ImmoFramework.Instance?.ProcedureManager?.CurrentProcedureTime:F2}s");
             GUILayout.EndArea();
         }
     }
@@ -55,10 +55,10 @@ namespace Immojoy.LiteFramework.Runtime
         private string m_GameVersion;
 
 
-        protected internal override void OnInit(IImmoFsm<ImmoProcedureManager> procedureOwner)
+        protected internal override void OnInitialize(IImmoFsm<ImmoProcedureManager> procedureOwner)
         {
-            base.OnInit(procedureOwner);
-            Debug.Log("Launch Procedure: OnInit");
+            base.OnInitialize(procedureOwner);
+            Debug.Log("Launch Procedure: OnInitialize");
         }
 
 
@@ -100,10 +100,10 @@ namespace Immojoy.LiteFramework.Runtime
         }
 
 
-        protected internal override void OnDestroy(IImmoFsm<ImmoProcedureManager> procedureOwner)
+        protected internal override void OnDispose(IImmoFsm<ImmoProcedureManager> procedureOwner)
         {
-            base.OnDestroy(procedureOwner);
-            Debug.Log("Launch Procedure: OnDestroy");
+            base.OnDispose(procedureOwner);
+            Debug.Log("Launch Procedure: OnDispose");
         }
 
 

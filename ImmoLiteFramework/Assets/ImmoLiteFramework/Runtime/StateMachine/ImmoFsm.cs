@@ -117,7 +117,7 @@ namespace Immojoy.LiteFramework.Runtime
                 }
 
                 fsm.m_States.Add(stateType, state);
-                state.OnInit(fsm);
+                state.OnInitialize(fsm);
             }
 
             return fsm;
@@ -166,7 +166,7 @@ namespace Immojoy.LiteFramework.Runtime
                 }
 
                 fsm.m_States.Add(stateType, state);
-                state.OnInit(fsm);
+                state.OnInitialize(fsm);
             }
 
             return fsm;
@@ -185,7 +185,7 @@ namespace Immojoy.LiteFramework.Runtime
 
             foreach (KeyValuePair<Type, ImmoFsmState<T>> state in m_States)
             {
-                state.Value.OnDestroy(this);
+                state.Value.OnDispose(this);
             }
 
             m_Name = null;

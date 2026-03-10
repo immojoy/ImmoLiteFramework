@@ -11,9 +11,9 @@ namespace Immojoy.LiteFramework.Runtime
         /// Called when procedure is initialized.
         /// </summary>
         /// <param name="procedureOwner">Procedure owner.</param>
-        protected internal override void OnInit(IImmoFsm<ImmoProcedureManager> procedureOwner)
+        protected internal override void OnInitialize(IImmoFsm<ImmoProcedureManager> procedureOwner)
         {
-            base.OnInit(procedureOwner);
+            base.OnInitialize(procedureOwner);
         }
 
 
@@ -54,9 +54,9 @@ namespace Immojoy.LiteFramework.Runtime
         /// Called when procedure is destroyed.
         /// </summary>
         /// <param name="procedureOwner">Procedure owner.</param>
-        protected internal override void OnDestroy(IImmoFsm<ImmoProcedureManager> procedureOwner)
+        protected internal override void OnDispose(IImmoFsm<ImmoProcedureManager> procedureOwner)
         {
-            base.OnDestroy(procedureOwner);
+            base.OnDispose(procedureOwner);
         }
     }
 }
