@@ -82,7 +82,7 @@ namespace Immojoy.LiteFramework.Runtime
         {
             if (m_CachedViews.TryGetValue(viewName, out ImmoUiView view))
             {
-                view.OnDestroy();
+                view.OnDispose();
                 m_CachedViews.Remove(viewName);
 
                 ImmoResourceManager.Instance.ReleaseAsset(viewName);
@@ -138,7 +138,7 @@ namespace Immojoy.LiteFramework.Runtime
 
             if (uiView != null)
             {
-                uiView.OnCreate();
+                uiView.OnInitialize();
                 uiView.OnShow(args);
                 m_CachedViews[address] = uiView;
 
@@ -176,14 +176,11 @@ namespace Immojoy.LiteFramework.Runtime
             if (m_Instance != null && m_Instance != this)
             {
                 Destroy(this);
+                return;
             }
-            else
-            {
-                m_Instance = this;
-                DontDestroyOnLoad(this);
 
-                InitializeLayers();
-            }
+            m_Instance = this;
+            InitializeLayers();
         }
 
 

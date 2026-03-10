@@ -12,6 +12,7 @@ namespace Immojoy.LiteFramework.Editor
         {
             // Create the root object
             GameObject frameworkRoot = new GameObject("Immo Lite Framework");
+            frameworkRoot.AddComponent<ImmoFramework>();
 
             // Register with the Undo system to support undo operations
             Undo.RegisterCreatedObjectUndo(frameworkRoot, "Create Immo Lite Framework");

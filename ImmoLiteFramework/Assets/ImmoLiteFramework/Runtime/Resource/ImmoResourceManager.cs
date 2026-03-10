@@ -258,12 +258,10 @@ namespace Immojoy.LiteFramework.Runtime
             if (m_Instance != null && m_Instance != this)
             {
                 Destroy(this);
+                return;
             }
-            else
-            {
-                m_Instance = this;
-                DontDestroyOnLoad(this);
-            }
+
+            m_Instance = this;
         }
     }
 }
