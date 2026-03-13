@@ -61,7 +61,7 @@ namespace Immojoy.LiteFramework.Runtime
             ImmoFsm<T> fsmImplement = (ImmoFsm<T>)fsm;
             if (fsmImplement == null)
             {
-                UnityEngine.Debug.LogError("FSM is invalid.");
+                UnityEngine.Debug.LogError("[ImmoLiteFramework]-[StateMachine] FSM is invalid.");
                 return;
             }
 
@@ -79,19 +79,19 @@ namespace Immojoy.LiteFramework.Runtime
             ImmoFsm<T> fsmImplement = (ImmoFsm<T>)fsm;
             if (fsmImplement == null)
             {
-                UnityEngine.Debug.LogError("FSM is invalid.");
+                UnityEngine.Debug.LogError("[ImmoLiteFramework]-[StateMachine] FSM is invalid.");
                 return;
             }
 
             if (stateType == null)
             {
-                UnityEngine.Debug.LogError("State type is invalid.");
+                UnityEngine.Debug.LogError("[ImmoLiteFramework]-[StateMachine] State type is invalid.");
                 return;
             }
 
             if (!typeof(ImmoFsmState<T>).IsAssignableFrom(stateType))
             {
-                UnityEngine.Debug.LogError($"State type '{stateType.FullName}' is invalid.");
+                UnityEngine.Debug.LogError($"[ImmoLiteFramework]-[StateMachine] State type '{stateType.FullName}' is invalid.");
                 return;
             }
 

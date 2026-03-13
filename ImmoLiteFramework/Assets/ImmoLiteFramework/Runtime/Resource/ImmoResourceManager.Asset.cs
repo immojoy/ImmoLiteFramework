@@ -18,7 +18,8 @@ namespace Immojoy.LiteFramework.Runtime
         {
             if (string.IsNullOrEmpty(assetAddress))
             {
-                throw new ArgumentException("Asset address cannot be null or empty.", nameof(assetAddress));
+                Debug.LogError($"[ImmoLiteFramework]-[ResourceManager] Asset address cannot be null or empty.");
+                return;
             }
 
             if (m_LoadedHandles.TryGetValue(assetAddress, out AsyncOperationHandle existingHandle))
@@ -77,7 +78,8 @@ namespace Immojoy.LiteFramework.Runtime
         {
             if (string.IsNullOrEmpty(assetAddress))
             {
-                throw new ArgumentException("Asset address cannot be null or empty.", nameof(assetAddress));
+                Debug.LogError($"[ImmoLiteFramework]-[ResourceManager] Asset address cannot be null or empty.");
+                return null;
             }
 
             if (m_LoadedHandles.TryGetValue(assetAddress, out AsyncOperationHandle existingHandle))
@@ -101,7 +103,7 @@ namespace Immojoy.LiteFramework.Runtime
             }
             else
             {
-                Debug.LogError($"Failed to load asset at address: {assetAddress}");
+                Debug.LogError($"[ImmoLiteFramework]-[ResourceManager] Failed to load asset at address: {assetAddress}");
                 return null;
             }
         }

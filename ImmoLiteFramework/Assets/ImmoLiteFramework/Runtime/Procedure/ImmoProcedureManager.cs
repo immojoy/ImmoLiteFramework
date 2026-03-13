@@ -25,7 +25,7 @@ namespace Immojoy.LiteFramework.Runtime
             {
                 if (m_ProcedureFsm == null)
                 {
-                    Debug.LogError("You must initialize procedure first.");
+                    Debug.LogError("[ImmoLiteFramework]-[ProcedureManager] You must initialize procedure first.");
                     return null;
                 }
 
@@ -43,7 +43,7 @@ namespace Immojoy.LiteFramework.Runtime
             {
                 if (m_ProcedureFsm == null)
                 {
-                    Debug.LogError("You must initialize procedure first.");
+                    Debug.LogError("[ImmoLiteFramework]-[ProcedureManager] You must initialize procedure first.");
                     return 0f;
                 }
 
@@ -81,13 +81,13 @@ namespace Immojoy.LiteFramework.Runtime
         {
             if (m_FsmManager == null)
             {
-                Debug.LogError("FSM manager is invalid.");
+                Debug.LogError("[ImmoLiteFramework]-[ProcedureManager] FSM manager is invalid.");
                 return;
             }
 
             if (procedures == null || procedures.Length == 0)
             {
-                Debug.LogError("Procedures is invalid.");
+                Debug.LogError("[ImmoLiteFramework]-[ProcedureManager] Procedures is invalid.");
                 return;
             }
 
@@ -95,7 +95,7 @@ namespace Immojoy.LiteFramework.Runtime
 
             if (m_ProcedureFsm == null)
             {
-                Debug.LogError("Failed to create procedure FSM.");
+                Debug.LogError("[ImmoLiteFramework]-[ProcedureManager] Failed to create procedure FSM.");
             }
         }
 
@@ -108,7 +108,7 @@ namespace Immojoy.LiteFramework.Runtime
         {
             if (m_ProcedureFsm == null)
             {
-                Debug.LogError("You must initialize procedure first.");
+                Debug.LogError("[ImmoLiteFramework]-[ProcedureManager] You must initialize procedure first.");
                 return;
             }
 
@@ -124,19 +124,19 @@ namespace Immojoy.LiteFramework.Runtime
         {
             if (m_ProcedureFsm == null)
             {
-                Debug.LogError("You must initialize procedure first.");
+                Debug.LogError("[ImmoLiteFramework]-[ProcedureManager] You must initialize procedure first.");
                 return;
             }
 
             if (procedureType == null)
             {
-                Debug.LogError("Procedure type is invalid.");
+                Debug.LogError("[ImmoLiteFramework]-[ProcedureManager] Procedure type is invalid.");
                 return;
             }
 
             if (!typeof(ImmoProcedureBase).IsAssignableFrom(procedureType))
             {
-                Debug.LogError($"Procedure type '{procedureType.FullName}' is invalid.");
+                Debug.LogError($"[ImmoLiteFramework]-[ProcedureManager] Procedure type '{procedureType.FullName}' is invalid.");
                 return;
             }
 
@@ -153,7 +153,7 @@ namespace Immojoy.LiteFramework.Runtime
         {
             if (m_ProcedureFsm == null)
             {
-                Debug.LogError("You must initialize procedure first.");
+                Debug.LogError("[ImmoLiteFramework]-[ProcedureManager] You must initialize procedure first.");
                 return false;
             }
 
@@ -170,19 +170,19 @@ namespace Immojoy.LiteFramework.Runtime
         {
             if (m_ProcedureFsm == null)
             {
-                Debug.LogError("You must initialize procedure first.");
+                Debug.LogError("[ImmoLiteFramework]-[ProcedureManager] You must initialize procedure first.");
                 return false;
             }
 
             if (procedureType == null)
             {
-                Debug.LogError("Procedure type is invalid.");
+                Debug.LogError("[ImmoLiteFramework]-[ProcedureManager] Procedure type is invalid.");
                 return false;
             }
 
             if (!typeof(ImmoProcedureBase).IsAssignableFrom(procedureType))
             {
-                Debug.LogError($"Procedure type '{procedureType.FullName}' is invalid.");
+                Debug.LogError($"[ImmoLiteFramework]-[ProcedureManager] Procedure type '{procedureType.FullName}' is invalid.");
                 return false;
             }
 
@@ -199,7 +199,7 @@ namespace Immojoy.LiteFramework.Runtime
         {
             if (m_ProcedureFsm == null)
             {
-                Debug.LogError("You must initialize procedure first.");
+                Debug.LogError("[ImmoLiteFramework]-[ProcedureManager] You must initialize procedure first.");
                 return null;
             }
 
@@ -216,19 +216,19 @@ namespace Immojoy.LiteFramework.Runtime
         {
             if (m_ProcedureFsm == null)
             {
-                Debug.LogError("You must initialize procedure first.");
+                Debug.LogError("[ImmoLiteFramework]-[ProcedureManager] You must initialize procedure first.");
                 return null;
             }
 
             if (procedureType == null)
             {
-                Debug.LogError("Procedure type is invalid.");
+                Debug.LogError("[ImmoLiteFramework]-[ProcedureManager] Procedure type is invalid.");
                 return null;
             }
 
             if (!typeof(ImmoProcedureBase).IsAssignableFrom(procedureType))
             {
-                Debug.LogError($"Procedure type '{procedureType.FullName}' is invalid.");
+                Debug.LogError($"[ImmoLiteFramework]-[ProcedureManager] Procedure type '{procedureType.FullName}' is invalid.");
                 return null;
             }
 

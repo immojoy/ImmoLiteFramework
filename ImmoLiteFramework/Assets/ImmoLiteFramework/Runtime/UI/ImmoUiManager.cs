@@ -58,7 +58,7 @@ namespace Immojoy.LiteFramework.Runtime
                     ProgressCallback = null,  // Optional: Implement progress callback if needed
                     FailureCallback = (address, errorMessage, data) =>
                     {
-                        Debug.LogError($"Failed to load UI asset at {address}: {errorMessage}");
+                        Debug.LogError($"[ImmoLiteFramework]-[UiManager] Failed to load UI asset at {address}: {errorMessage}");
                     }
                 };
                 m_ResourceManager.LoadAssetAsyncWithCallback<GameObject>(assetAddress, callback, args);
@@ -145,7 +145,7 @@ namespace Immojoy.LiteFramework.Runtime
             }
             else
             {
-                Debug.LogError($"The loaded UI prefab at {address} does not have an ImmoUiView component.");
+                Debug.LogError($"[ImmoLiteFramework]-[UiManager] The loaded UI prefab at {address} does not have an ImmoUiView component.");
                 Destroy(uiObject);
             }
         }

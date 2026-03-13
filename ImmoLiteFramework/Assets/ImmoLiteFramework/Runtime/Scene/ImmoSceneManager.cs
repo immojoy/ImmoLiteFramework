@@ -31,7 +31,7 @@ namespace Immojoy.LiteFramework.Runtime
         {
             if (m_IsTransitioning)
             {
-                Debug.LogWarning("Scene transition is already in progress.");
+                Debug.LogWarning("[ImmoLiteFramework]-[SceneManager] Scene transition is already in progress.");
                 return;
             }
             m_IsTransitioning = true;
@@ -42,7 +42,7 @@ namespace Immojoy.LiteFramework.Runtime
             }
             catch (Exception ex)
             {
-                Debug.LogError($"Scene transition failed: {ex}");
+                Debug.LogError($"[ImmoLiteFramework]-[SceneManager] Scene transition failed: {ex}");
             }
             finally
             {
@@ -114,7 +114,7 @@ namespace Immojoy.LiteFramework.Runtime
                     }
                     catch (Exception ex)
                     {
-                        Debug.LogError($"Failed to fade out transition: {ex}");
+                        Debug.LogError($"[ImmoLiteFramework]-[SceneManager] Failed to fade out transition: {ex}");
                     }
                 }
             }
@@ -166,7 +166,7 @@ namespace Immojoy.LiteFramework.Runtime
                 }
                 else
                 {
-                    Debug.LogError($"Failed to load scene '{scene}': {handle.OperationException}");
+                    Debug.LogError($"[ImmoLiteFramework]-[SceneManager] Failed to load scene '{scene}': {handle.OperationException}");
                 }
 
                 completed++;
@@ -202,7 +202,7 @@ namespace Immojoy.LiteFramework.Runtime
 
                     if (unloadHandle.Status != AsyncOperationStatus.Succeeded)
                     {
-                        Debug.LogError($"Failed to unload scene '{scene}': {unloadHandle.OperationException}");
+                        Debug.LogError($"[ImmoLiteFramework]-[SceneManager] Failed to unload scene '{scene}': {unloadHandle.OperationException}");
                     }
 
                     m_LoadedScenes.Remove(scene);
@@ -219,7 +219,7 @@ namespace Immojoy.LiteFramework.Runtime
         {
             if (m_LoadedScenes.ContainsKey(sceneAddress))
             {
-                Debug.LogWarning($"Scene '{sceneAddress}' is already loaded.");
+                Debug.LogWarning($"[ImmoLiteFramework]-[SceneManager] Scene '{sceneAddress}' is already loaded.");
                 return;
             }
 
@@ -237,7 +237,7 @@ namespace Immojoy.LiteFramework.Runtime
             }
             else
             {
-                Debug.LogError($"Failed to load scene '{sceneAddress}': {handle.OperationException}");
+                Debug.LogError($"[ImmoLiteFramework]-[SceneManager] Failed to load scene '{sceneAddress}': {handle.OperationException}");
             }
         }
 
@@ -249,7 +249,7 @@ namespace Immojoy.LiteFramework.Runtime
         {
             if (!m_LoadedScenes.TryGetValue(sceneAddress, out var handle))
             {
-                Debug.LogWarning($"Scene '{sceneAddress}' is not loaded.");
+                Debug.LogWarning($"[ImmoLiteFramework]-[SceneManager] Scene '{sceneAddress}' is not loaded.");
                 return;
             }
 
@@ -258,7 +258,7 @@ namespace Immojoy.LiteFramework.Runtime
 
             if (unloadHandle.Status != AsyncOperationStatus.Succeeded)
             {
-                Debug.LogError($"Failed to unload scene '{sceneAddress}': {unloadHandle.OperationException}");
+                Debug.LogError($"[ImmoLiteFramework]-[SceneManager] Failed to unload scene '{sceneAddress}': {unloadHandle.OperationException}");
             }
 
             m_LoadedScenes.Remove(sceneAddress);

@@ -20,7 +20,8 @@ namespace Immojoy.LiteFramework.Runtime
         {
             if (string.IsNullOrEmpty(sceneAddress))
             {
-                throw new ArgumentException("Scene address cannot be null or empty.", nameof(sceneAddress));
+                Debug.LogError("[ImmoLiteFramework]-[ResourceManager] Scene address cannot be null or empty.");
+                return default;
             }
 
             return Addressables.LoadSceneAsync(sceneAddress,

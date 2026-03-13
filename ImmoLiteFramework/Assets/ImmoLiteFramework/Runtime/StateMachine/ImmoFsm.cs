@@ -86,13 +86,13 @@ namespace Immojoy.LiteFramework.Runtime
         {
             if (owner == null)
             {
-                UnityEngine.Debug.LogError("FSM owner is invalid.");
+                UnityEngine.Debug.LogError("[ImmoLiteFramework]-[StateMachine] FSM owner is invalid.");
                 return null;
             }
 
             if (states == null || states.Length < 1)
             {
-                UnityEngine.Debug.LogError("FSM states is invalid.");
+                UnityEngine.Debug.LogError("[ImmoLiteFramework]-[StateMachine] FSM states is invalid.");
                 return null;
             }
 
@@ -105,14 +105,14 @@ namespace Immojoy.LiteFramework.Runtime
             {
                 if (state == null)
                 {
-                    UnityEngine.Debug.LogError("FSM states is invalid.");
+                    UnityEngine.Debug.LogError("[ImmoLiteFramework]-[StateMachine] FSM states is invalid.");
                     return null;
                 }
 
                 Type stateType = state.GetType();
                 if (fsm.m_States.ContainsKey(stateType))
                 {
-                    UnityEngine.Debug.LogError($"FSM '{name}' state '{stateType.FullName}' is already exist.");
+                    UnityEngine.Debug.LogError($"[ImmoLiteFramework]-[StateMachine] FSM '{name}' state '{stateType.FullName}' is already exist.");
                     return null;
                 }
 
@@ -135,13 +135,13 @@ namespace Immojoy.LiteFramework.Runtime
         {
             if (owner == null)
             {
-                UnityEngine.Debug.LogError("FSM owner is invalid.");
+                UnityEngine.Debug.LogError("[ImmoLiteFramework]-[StateMachine] FSM owner is invalid.");
                 return null;
             }
 
             if (states == null || states.Count < 1)
             {
-                UnityEngine.Debug.LogError("FSM states is invalid.");
+                UnityEngine.Debug.LogError("[ImmoLiteFramework]-[StateMachine] FSM states is invalid.");
                 return null;
             }
 
@@ -154,14 +154,14 @@ namespace Immojoy.LiteFramework.Runtime
             {
                 if (state == null)
                 {
-                    UnityEngine.Debug.LogError("FSM states is invalid.");
+                    UnityEngine.Debug.LogError("[ImmoLiteFramework]-[StateMachine] FSM states is invalid.");
                     return null;
                 }
 
                 Type stateType = state.GetType();
                 if (fsm.m_States.ContainsKey(stateType))
                 {
-                    UnityEngine.Debug.LogError($"FSM '{name}' state '{stateType.FullName}' is already exist.");
+                    UnityEngine.Debug.LogError($"[ImmoLiteFramework]-[StateMachine] FSM '{name}' state '{stateType.FullName}' is already exist.");
                     return null;
                 }
 
@@ -205,14 +205,14 @@ namespace Immojoy.LiteFramework.Runtime
         {
             if (IsRunning)
             {
-                UnityEngine.Debug.LogError("FSM is running, can not start again.");
+                UnityEngine.Debug.LogError("[ImmoLiteFramework]-[StateMachine] FSM is running, can not start again.");
                 return;
             }
 
             ImmoFsmState<T> state = GetState<TState>();
             if (state == null)
             {
-                UnityEngine.Debug.LogError($"FSM '{m_Name}' can not start state '{typeof(TState).FullName}' which is not exist.");
+                UnityEngine.Debug.LogError($"[ImmoLiteFramework]-[StateMachine] FSM '{m_Name}' can not start state '{typeof(TState).FullName}' which is not exist.");
                 return;
             }
 
@@ -230,26 +230,26 @@ namespace Immojoy.LiteFramework.Runtime
         {
             if (IsRunning)
             {
-                UnityEngine.Debug.LogError("FSM is running, can not start again.");
+                UnityEngine.Debug.LogError("[ImmoLiteFramework]-[StateMachine] FSM is running, can not start again.");
                 return;
             }
 
             if (stateType == null)
             {
-                UnityEngine.Debug.LogError("State type is invalid.");
+                UnityEngine.Debug.LogError("[ImmoLiteFramework]-[StateMachine] State type is invalid.");
                 return;
             }
 
             if (!typeof(ImmoFsmState<T>).IsAssignableFrom(stateType))
             {
-                UnityEngine.Debug.LogError($"State type '{stateType.FullName}' is invalid.");
+                UnityEngine.Debug.LogError($"[ImmoLiteFramework]-[StateMachine] State type '{stateType.FullName}' is invalid.");
                 return;
             }
 
             ImmoFsmState<T> state = GetState(stateType);
             if (state == null)
             {
-                UnityEngine.Debug.LogError($"FSM '{m_Name}' can not start state '{stateType.FullName}' which is not exist.");
+                UnityEngine.Debug.LogError($"[ImmoLiteFramework]-[StateMachine] FSM '{m_Name}' can not start state '{stateType.FullName}' which is not exist.");
                 return;
             }
 
@@ -279,13 +279,13 @@ namespace Immojoy.LiteFramework.Runtime
         {
             if (stateType == null)
             {
-                UnityEngine.Debug.LogError("State type is invalid.");
+                UnityEngine.Debug.LogError("[ImmoLiteFramework]-[StateMachine] State type is invalid.");
                 return false;
             }
 
             if (!typeof(ImmoFsmState<T>).IsAssignableFrom(stateType))
             {
-                UnityEngine.Debug.LogError($"State type '{stateType.FullName}' is invalid.");
+                UnityEngine.Debug.LogError($"[ImmoLiteFramework]-[StateMachine] State type '{stateType.FullName}' is invalid.");
                 return false;
             }
 
@@ -319,13 +319,13 @@ namespace Immojoy.LiteFramework.Runtime
         {
             if (stateType == null)
             {
-                UnityEngine.Debug.LogError("State type is invalid.");
+                UnityEngine.Debug.LogError("[ImmoLiteFramework]-[StateMachine] State type is invalid.");
                 return null;
             }
 
             if (!typeof(ImmoFsmState<T>).IsAssignableFrom(stateType))
             {
-                UnityEngine.Debug.LogError($"State type '{stateType.FullName}' is invalid.");
+                UnityEngine.Debug.LogError($"[ImmoLiteFramework]-[StateMachine] State type '{stateType.FullName}' is invalid.");
                 return null;
             }
 
@@ -400,14 +400,14 @@ namespace Immojoy.LiteFramework.Runtime
         {
             if (m_CurrentState == null)
             {
-                UnityEngine.Debug.LogError("Current state is invalid.");
+                UnityEngine.Debug.LogError("[ImmoLiteFramework]-[StateMachine] Current state is invalid.");
                 return;
             }
 
             ImmoFsmState<T> state = GetState(stateType);
             if (state == null)
             {
-                UnityEngine.Debug.LogError($"FSM '{m_Name}' can not change state to '{stateType.FullName}' which is not exist.");
+                UnityEngine.Debug.LogError($"[ImmoLiteFramework]-[StateMachine] FSM '{m_Name}' can not change state to '{stateType.FullName}' which is not exist.");
                 return;
             }
 
