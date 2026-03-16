@@ -2,6 +2,8 @@
 using System;
 using System.Collections.Generic;
 
+using UnityEngine;
+
 
 namespace Immojoy.LiteFramework.Runtime
 {
@@ -14,6 +16,7 @@ namespace Immojoy.LiteFramework.Runtime
         private string m_Name;
         private T m_Owner;
         private readonly Dictionary<Type, ImmoFsmState<T>> m_States;
+        private Dictionary<string, object> m_Data;
         private ImmoFsmState<T> m_CurrentState;
         private float m_CurrentStateTime;
         private bool m_IsDestroyed;
@@ -353,6 +356,67 @@ namespace Immojoy.LiteFramework.Runtime
             }
 
             return results;
+        }
+
+        
+        /// <summary>
+        /// Gets a finite state machine data.
+        /// </summary>
+        /// <param name="name">The name of the data to get.</param>
+        /// <returns>The data associated with the specified name.</returns>
+        public object GetData(string name)
+        {
+            if (string.IsNullOrEmpty(name))
+            {
+                Debug.LogError("[ImmoLiteFramework]-[StateMachine] Data name is invalid.");
+                return null;
+            }
+
+            if (m_Data != null && m_Data.TryGetValue(name, out object data))
+            {
+                return data;
+            }
+
+            return null;
+        }
+
+
+        /// <summary>
+        /// Sets a finite state machine data.
+        /// </summary>
+        /// <param name="name">The name of the data to set.</param>
+        /// <param name="data">The data to set.</param>
+        public void SetData(string name, object data)
+        {
+            if (string.IsNullOrEmpty(name))
+            {
+                Debug.LogError("[ImmoLiteFramework]-[StateMachine] Data name is invalid.");
+                return;
+            }
+
+            if (m_Data == null)
+            {
+                m_Data = new Dictionary<string, object>();
+            }
+
+            m_Data[name] = data;
+        }
+
+        
+        /// <summary>
+        /// Checks whether the finite state machine has a specific data.
+        /// </summary>
+        /// <param name="name">The name of the data to check.</param>
+        /// <returns>True if the data exists; otherwise, false.</returns>
+        public bool HasData(string name)
+        {
+            if (string.IsNullOrEmpty(name))
+            {
+                Debug.LogError("[ImmoLiteFramework]-[StateMachine] Data name is invalid.");
+                return false;
+            }
+
+            return m_Data != null && m_Data.ContainsKey(name);
         }
 
 
