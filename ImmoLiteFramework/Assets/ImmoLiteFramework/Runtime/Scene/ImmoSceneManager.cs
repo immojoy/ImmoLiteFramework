@@ -18,10 +18,12 @@ namespace Immojoy.LiteFramework.Runtime
     public sealed class ImmoSceneManager : MonoBehaviour
     {
         private ImmoResourceManager m_ResourceManager;
+        private ImmoEventManager m_EventManager;
 
         private readonly Dictionary<string, AsyncOperationHandle<SceneInstance>> m_LoadedScenes = new();
 
         private bool m_IsTransitioning = false;
+        private float m_SceneLoadDuration = 0f;
 
 
         /// <summary>
@@ -39,6 +41,7 @@ namespace Immojoy.LiteFramework.Runtime
             try
             {
                 await ExecuteTransitionAsync(config);
+                m_EventManager.TriggerEvent(new ImmoSceneLoadSuccessEvent(this, m_SceneLoadDuration));
             }
             catch (Exception ex)
             {
@@ -75,8 +78,10 @@ namespace Immojoy.LiteFramework.Runtime
                     ? Task.Delay(TimeSpan.FromSeconds(config.MinTransitionTime))
                     : Task.CompletedTask;
 
+                float startTime = Time.time;
                 // # Step 3: Load new scenes and preload assets
                 await LoadScenesInternalAsync(config.ScenesToLoad, config.AssetsToPreload, loading);
+                m_SceneLoadDuration = Time.time - startTime;
 
                 // # Step 4: Activate all newly loaded scenes
                 await ActivateScenesAsync(config.ScenesToLoad);
@@ -265,9 +270,10 @@ namespace Immojoy.LiteFramework.Runtime
         }
 
 
-        public void Initialize(ImmoResourceManager resourceManager)
+        public void Initialize(ImmoResourceManager resourceManager, ImmoEventManager eventManager)
         {
             m_ResourceManager = resourceManager;
+            m_EventManager = eventManager;
         }
 
 

@@ -65,10 +65,10 @@ namespace Immojoy.LiteFramework.Runtime
             ResourceManager.Initialize();
             FsmManager.Initialize();
 
-            SceneManager.Initialize(ResourceManager);
+            SceneManager.Initialize(ResourceManager, EventManager);
 
             UiManager.Initialize(ResourceManager);
-            
+
             ProcedureManager.Initialize(FsmManager);
         }
 
