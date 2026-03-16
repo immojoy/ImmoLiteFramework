@@ -100,5 +100,29 @@ namespace Immojoy.LiteFramework.Runtime
         /// </summary>
         /// <returns>All states of the finite state machine.</returns>
         ImmoFsmState<T>[] GetAllStates();
+
+
+        /// <summary>
+        /// Gets a finite state machine data.
+        /// </summary>
+        /// <param name="name">The name of the data to get.</param>
+        /// <returns>The data associated with the specified name.</returns>
+        public object GetData(string name);
+
+
+        /// <summary>
+        /// Sets a finite state machine data.
+        /// </summary>
+        /// <param name="name">The name of the data to set.</param>
+        /// <param name="data">The data to set.</param>
+        public void SetData(string name, object data);
+
+
+        /// <summary>
+        /// Checks whether the finite state machine has a specific data.
+        /// </summary>
+        /// <param name="name">The name of the data to check.</param>
+        /// <returns>True if the data exists; otherwise, false.</returns>
+        public bool HasData(string name);
     }
 }
