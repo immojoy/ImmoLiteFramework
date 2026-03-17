@@ -3,6 +3,19 @@ using System.Collections.Generic;
 
 namespace Immojoy.LiteFramework.Runtime
 {
+    public delegate void OnFadeInComplete();
+
+    public delegate void OnFadeOutComplete();
+
+    public delegate void OnSceneLoadProgress(string sceneName, float progress, float totalProgress);
+
+    public delegate void OnSceneLoadSuccess(string sceneName, float loadDuration);
+
+    public delegate void OnSceneLoadFail(string sceneName, string errorMessage);
+
+    public delegate void OnSceneTransitionComplete();
+
+
     /// <summary>
     /// Configuration for a scene transition, specifying which scenes to load/unload
     /// and how the transition should be presented to the user.
@@ -48,5 +61,41 @@ namespace Immojoy.LiteFramework.Runtime
         /// Addressable addresses of additional assets to preload during the transition.
         /// </summary>
         public List<string> AssetsToPreload { get; set; } = new();
+
+
+        #region Callbacks
+
+        /// <summary>
+        /// Callback invoked when the fade-in transition is complete.
+        /// </summary>
+        /// 
+        public OnFadeInComplete FadeInCompleteCallback { get; set; }
+        /// <summary>
+        /// Callback invoked when the fade-out transition is complete.
+        /// </summary>
+        /// 
+        public OnFadeOutComplete FadeOutCompleteCallback { get; set; }
+        /// <summary>
+        /// Callback invoked to report the progress of a scene load operation.
+        /// </summary>
+        /// 
+        public OnSceneLoadProgress SceneLoadProgressCallback { get; set; }
+
+        /// <summary>
+        /// Callback invoked when a scene is successfully loaded.
+        /// </summary>
+        public OnSceneLoadSuccess SceneLoadSuccessCallback { get; set; }
+
+        /// <summary>
+        /// Callback invoked when a scene fails to load.
+        /// </summary>
+        public OnSceneLoadFail SceneLoadFailCallback { get; set; }
+
+        /// <summary>
+        /// Callback invoked when the entire scene transition process is complete (all scenes loaded/unloaded and transitions finished).
+        /// </summary>
+        public OnSceneTransitionComplete SceneTransitionCompleteCallback { get; set; }
+
+        #endregion
     }
 }

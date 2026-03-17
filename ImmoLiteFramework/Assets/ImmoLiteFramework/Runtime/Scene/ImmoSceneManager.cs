@@ -41,7 +41,6 @@ namespace Immojoy.LiteFramework.Runtime
             try
             {
                 await ExecuteTransitionAsync(config);
-                m_EventManager.TriggerEvent(new ImmoSceneLoadSuccessEvent(this, m_SceneLoadDuration));
             }
             catch (Exception ex)
             {
@@ -63,6 +62,10 @@ namespace Immojoy.LiteFramework.Runtime
             if (transition != null)
             {
                 await transition.FadeInAsync();
+
+                // Trigger event and callback after fade-in completes, before heavy loading starts
+                m_EventManager.TriggerEvent(new ImmmoFadeInCompleteEvent(this));
+                config.FadeInCompleteCallback?.Invoke();
             }
 
             try
@@ -78,10 +81,8 @@ namespace Immojoy.LiteFramework.Runtime
                     ? Task.Delay(TimeSpan.FromSeconds(config.MinTransitionTime))
                     : Task.CompletedTask;
 
-                float startTime = Time.time;
                 // # Step 3: Load new scenes and preload assets
-                await LoadScenesInternalAsync(config.ScenesToLoad, config.AssetsToPreload, loading);
-                m_SceneLoadDuration = Time.time - startTime;
+                await LoadScenesInternalAsync(config);
 
                 // # Step 4: Activate all newly loaded scenes
                 await ActivateScenesAsync(config.ScenesToLoad);
@@ -116,6 +117,10 @@ namespace Immojoy.LiteFramework.Runtime
                     try
                     {
                         await transition.FadeOutAsync();
+
+                        // Trigger event and callback after fade-out completes, after all loading is done
+                        m_EventManager.TriggerEvent(new ImmmoFadeOutCompleteEvent(this));
+                        config.FadeOutCompleteCallback?.Invoke();
                     }
                     catch (Exception ex)
                     {
@@ -126,32 +131,29 @@ namespace Immojoy.LiteFramework.Runtime
         }
 
 
-        private async Task LoadScenesInternalAsync(
-            List<string> scenesToLoad, List<string> assetsToPreload, IImmoLoadingHandler loadingHandler)
+        private async Task LoadScenesInternalAsync(ImmoSceneTransitionConfig config)
         {
-            int total = scenesToLoad.Count + assetsToPreload.Count;
-            if (total == 0)
-            {
-                return;
-            }
-
+            int total = config.ScenesToLoad.Count;
             int completed = 0;
 
             // Preload additional assets
-            foreach (string asset in assetsToPreload)
+            foreach (string asset in config.AssetsToPreload)
             {
                 await m_ResourceManager.LoadAssetAsync<UnityEngine.Object>(asset);
-                completed++;
-                loadingHandler?.UpdateLoadingProgress((float)completed / total);
             }
 
             // Load scenes with fine-grained progress
-            foreach (string scene in scenesToLoad)
+            foreach (string scene in config.ScenesToLoad)
             {
                 if (m_LoadedScenes.ContainsKey(scene))
                 {
                     completed++;
-                    loadingHandler?.UpdateLoadingProgress((float)completed / total);
+
+                    m_EventManager.TriggerEvent(new ImmoSceneLoadSuccessEvent(this, scene, 0f));
+                    config.SceneLoadSuccessCallback?.Invoke(scene, 0f);
+
+                    m_EventManager.TriggerEvent(new ImmoSceneLoadProgressEvent(this, scene, 1f, completed / (float)total));
+                    config.SceneLoadProgressCallback?.Invoke(scene, 1f, completed / (float)total);
                     continue;
                 }
 
@@ -160,8 +162,12 @@ namespace Immojoy.LiteFramework.Runtime
                 // Poll progress until complete
                 while (!handle.IsDone)
                 {
-                    float overallProgress = (completed + handle.PercentComplete) / total;
-                    loadingHandler?.UpdateLoadingProgress(overallProgress);
+                    float progress = Mathf.Clamp01(handle.PercentComplete);
+                    float overallProgress = (completed + progress) / total;
+
+                    m_EventManager.TriggerEvent(new ImmoSceneLoadProgressEvent(this, scene, progress, overallProgress));
+                    config.SceneLoadProgressCallback?.Invoke(scene, progress, overallProgress);
+
                     await Task.Yield();
                 }
 
@@ -175,7 +181,9 @@ namespace Immojoy.LiteFramework.Runtime
                 }
 
                 completed++;
-                loadingHandler?.UpdateLoadingProgress((float)completed / total);
+
+                m_EventManager.TriggerEvent(new ImmoSceneLoadSuccessEvent(this, scene, 0f));
+                config.SceneLoadSuccessCallback?.Invoke(scene, 0f);
             }
         }
 
