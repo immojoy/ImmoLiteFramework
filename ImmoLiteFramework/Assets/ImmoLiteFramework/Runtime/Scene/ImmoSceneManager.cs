@@ -21,9 +21,43 @@ namespace Immojoy.LiteFramework.Runtime
         private ImmoEventManager m_EventManager;
 
         private readonly Dictionary<string, AsyncOperationHandle<SceneInstance>> m_LoadedScenes = new();
+        private readonly Dictionary<string, IImmoTransitionHandler> m_TransitionHandlers = new();
 
         private bool m_IsTransitioning = false;
         private float m_SceneLoadDuration = 0f;
+
+
+        /// <summary>
+        /// Registers a transition handler with the given name.
+        /// </summary>
+        /// <param name="handlerName">The name of the transition handler.</param>
+        /// <param name="handler">The transition handler instance.</param>
+        public void RegisterTransitionHandler(string handlerName, IImmoTransitionHandler handler)
+        {
+            if (string.IsNullOrEmpty(handlerName) || handler == null)
+            {
+                Debug.LogError("[ImmoLiteFramework]-[SceneManager] Invalid transition handler registration.");
+                return;
+            }
+            m_TransitionHandlers[handlerName] = handler;
+        }
+
+
+        /// <summary>
+        /// Retrieves a registered transition handler by its name.
+        /// </summary>
+        /// <param name="handlerName">The name of the transition handler.</param>
+        /// <returns>The transition handler instance if found; otherwise, null.</returns>
+        public IImmoTransitionHandler GetTransitionHandler(string handlerName)
+        {
+            if (string.IsNullOrEmpty(handlerName))
+            {
+                Debug.LogError("[ImmoLiteFramework]-[SceneManager] Handler name cannot be null or empty.");
+                return null;
+            }
+            m_TransitionHandlers.TryGetValue(handlerName, out var handler);
+            return handler;
+        }
 
 
         /// <summary>
