@@ -44,6 +44,21 @@ namespace Immojoy.LiteFramework.Runtime
 
 
         /// <summary>
+        /// Unregisters a transition handler by its name.
+        /// </summary>
+        /// <param name="handlerName">The name of the transition handler to unregister.</param>
+        public void UnregisterTransitionHandler(string handlerName)
+        {
+            if (string.IsNullOrEmpty(handlerName))
+            {
+                Debug.LogError("[ImmoLiteFramework]-[SceneManager] Handler name cannot be null or empty.");
+                return;
+            }
+            m_TransitionHandlers.Remove(handlerName);
+        }
+
+
+        /// <summary>
         /// Retrieves a registered transition handler by its name.
         /// </summary>
         /// <param name="handlerName">The name of the transition handler.</param>
